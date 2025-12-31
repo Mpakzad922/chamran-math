@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>عملیات کسرها - کلاس شهید چمران</title>
+    
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/lalezar-font@v32.0/dist/lalezar-font-face.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
+
+    <style>
+        :root { --primary: #00f2ff; --bg: #050510; --accent: #ff0055; }
+        body { margin: 0; overflow: hidden; background: var(--bg); color: #fff; font-family: 'Lalezar'; touch-action: none; user-select: none; }
+        
+        /* مدیریت صفحات */
+        .screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; background: var(--bg); transition: opacity 0.5s;
+        }
+        .active { display: flex; }
+
+        /* استایل‌های عمومی */
+        h1 { margin: 0; font-size: 2.5rem; text-shadow: 0 0 20px var(--primary); color: var(--primary); text-align: center;}
+        p { font-family: 'Vazirmatn'; color: #aaa; margin-top: 10px; text-align: center;}
+
+        /* صفحه ورود */
+        .login-box {
+            background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1); width: 80%; max-width: 350px;
+            text-align: center; backdrop-filter: blur(10px);
+        }
+        input {
+            width: 100%; padding: 15px; margin: 20px 0; border-radius: 50px;
+            border: 2px solid #333; background: #000; color: #fff;
+            font-family: 'Vazirmatn'; text-align: center; font-size: 1.1rem; outline: none;
+            box-sizing: border-box; transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); }
+        
+        button {
+            padding: 15px 40px; border-radius: 50px; border: none;
+            font-family: 'Lalezar'; font-size: 1.4rem; cursor: pointer;
+            background: linear-gradient(45deg, var(--primary), #0066ff); color: #000;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.4); transition: transform 0.2s;
+            width: 100%;
+        }
+        button:active { transform: scale(0.95); }
+
+        /* صفحه قفل (بازگشت مجدد) */
+        .lock-card {
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 30px rgba(255, 0, 85, 0.2);
+        }
+        .student-name { color: #fff; font-size: 1.8rem; margin: 10px 0; display: block; }
+        .cool-msg { color: var(--primary); font-size: 1.2rem; margin-top: 20px; line-height: 1.6; }
+
+        /* محیط بازی */
+        #game-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; display: flex; flex-direction: column; align-items: center; }
+        
+        .hud-top {
+            margin-top: 60px; background: rgba(255,255,255,0.1); padding: 10px 30px;
+            border-radius: 20px; backdrop-filter: blur(5px); pointer-events: auto;
+            display: flex; gap: 20px; align-items: center; border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .math-problem { font-size: 2.2rem; direction: ltr; display: flex; align-items: center; gap: 10px; color: #ffeb3b; }
+        .fraction { display: inline-flex; flex-direction: column; align-items: center; font-size: 0.8em; line-height: 1; }
+        .frac-line { width: 100%; height: 2px; background: currentColor; margin: 3px 0; }
+
+        #btn-shoot {
+            position: absolute; bottom: 40px; width: 200px;
+            background: #00e676; box-shadow: 0 0 20px #00e676;
+            opacity: 0; transform: scale(0); pointer-events: auto;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #btn-shoot.show { opacity: 1; transform: scale(1); }
+
+        .feedback {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            font-size: 5rem; text-shadow: 0 0 30px #fff; display: none; z-index: 50;
+        }
+
+        /* لوگو کلاس */
+        .badge {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(0,0,0,0.7); padding: 5px 15px; border-radius: 20px;
+            border: 1px solid var(--accent); display: flex; align-items: center; gap: 8px;
+            z-index: 20;
+        }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="bgCanvas" style="position:absolute; top:0; left:0; z-index:0;"></canvas>
+    <canvas id="gameCanvas" style="position:absolute; top:0; left:0; z-index:1;"></canvas>
+
+    <div id="login-screen" class="screen">
+        <div class="login-box">
+            <h1>پایگاه فضایی<br><span style="font-size:0.6em; color:#fff;">کلاس شهید چمران</span></h1>
+            <p>برای شروع عملیات، هویت خود را تایید کنید.</p>
+            <input type="text" id="inpName" placeholder="نام و نام خانوادگی..." autocomplete="off">
+            <button onclick="attemptLogin()">ورود به عملیات</button>
+        </div>
+    </div>
+
+    <div id="lock-screen" class="screen">
+        <div class="login-box lock-card">
+            <div style="font-size:4rem; margin-bottom:10px;">🫡</div>
+            <span class="student-name" id="lockName">نام دانش‌آموز</span>
+            <div class="cool-msg" id="lockMsg">
+                ماموریت شما با موفقیت به پایان رسیده است، کاپیتان!
+                <br>
+                <span style="font-size:0.9rem; color:#aaa;">(نتیجه ثبت شده است)</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-ui" style="display:none;">
+        <div class="badge">
+            <span>🚀</span> <span style="font-family:'Vazirmatn'; font-size:0.8rem;">کلاس پنجم</span>
+        </div>
+
+        <div class="hud-top">
+            <span id="scoreEl">امتیاز: ۰</span>
+            <div style="width:1px; height:20px; background:#fff;"></div>
+            <div id="problemEl" class="math-problem"></div>
+        </div>
+
+        <div id="feedback" class="feedback"></div>
+        <button id="btn-shoot">شکارش کن!</button>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <div class="login-box" style="border-color:#00e676; box-shadow:0 0 30px rgba(0,230,118,0.2);">
+            <h1 style="color:#00e676;">ماموریت تکمیل شد!</h1>
+            <p style="margin:20px 0; font-size:1.2rem; color:#fff;">امتیاز نهایی شما:</p>
+            <h2 style="font-size:3rem; margin:0; color:#ffeb3b;" id="finalScore">۰</h2>
+            <p style="margin-top:30px; font-size:0.9rem;">از صفحه اسکرین‌شات بگیرید.</p>
+        </div>
+    </div>
+
+    <script>
+        // --- تنظیمات ذخیره‌سازی ---
+        const DB_KEY = 'chamran_class_mission_data_v1';
+
+        // --- توابع کمکی ---
+        const toPersianNum = (n) => n.toString().replace(/\d/g, x => "۰۱۲۳۴۵۶۷۸۹"[x]);
+        const $ = (id) => document.getElementById(id);
+
+        // --- بررسی وضعیت کاربر (اولین کاری که انجام می‌شود) ---
+        function checkUserStatus() {
+            const savedData = localStorage.getItem(DB_KEY);
+            
+            if (savedData) {
+                // اگر قبلا بازی کرده
+                const data = JSON.parse(savedData);
+                showLockedScreen(data.name);
+            } else {
+                // کاربر جدید است
+                $('login-screen').classList.add('active');
+            }
+        }
+
+        function showLockedScreen(name) {
+            $('lockName').innerText = name;
+            // انتخاب پیام تصادفی
+            const msgs = [
+                "ماموریت شما با موفقیت ثبت شده است، کاپیتان!",
+                "اطلاعات عملیات شما در پایگاه موجود است. خسته نباشید!",
+                "شما قبلاً در این چالش شرکت کرده‌اید. عالی بود!",
+                "سیستم امنیتی: ورود مجدد مجاز نیست. نتیجه شما محفوظ است."
+            ];
+            $('lockMsg').innerHTML = msgs[Math.floor(Math.random() * msgs.length)] + '<br><br><span style="font-size:0.8rem; color:#666;">(ورود مجدد مسدود است)</span>';
+            
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            $('lock-screen').classList.add('active');
+        }
+
+        // --- لاجیک ورود ---
+        let playerName = "";
+        
+        function attemptLogin() {
+            const name = $('inpName').value.trim();
+            if (name.length < 3) {
+                alert("لطفاً نام و نام خانوادگی خود را کامل بنویسید.");
+                return;
+            }
+            playerName = name;
+            
+            // شروع بازی
+            $('login-screen').classList.remove('active');
+            $('game-ui').style.display = 'flex';
+            initGame();
+        }
+
+        // --- پایان بازی و ذخیره ---
+        function finishGame() {
+            // ذخیره در حافظه
+            const data = {
+                name: playerName,
+                score: score,
+                date: new Date().toISOString(),
+                played: true
+            };
+            localStorage.setItem(DB_KEY, JSON.stringify(data));
+
+            // نمایش کارنامه
+            $('finalScore').innerText = toPersianNum(score);
+            $('game-ui').style.display = 'none';
+            $('result-screen').classList.add('active');
+        }
+
+        // ==========================================
+        // ========== موتور بازی (Game Engine) =======
+        // ==========================================
+        
+        const canvas = $('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const bgCanvas = $('bgCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let width, height;
+
+        const resize = () => {
+            width = window.innerWidth; height = window.innerHeight;
+            canvas.width = bgCanvas.width = width; canvas.height = bgCanvas.height = height;
+        };
+        window.addEventListener('resize', resize); resize();
+
+        let orbs = [], particles = [], stars = [], score = 0;
+        let currentProblem = {}, questionCount = 0;
+        const MAX_Q = 5; // تعداد سوالات
+
+        // ستاره‌ها
+        class Star {
+            constructor() { this.x=Math.random()*width; this.y=Math.random()*height; this.s=Math.random()*2; }
+            draw() { bgCtx.fillStyle=`rgba(255,255,255,${Math.random()})`; bgCtx.beginPath(); bgCtx.arc(this.x,this.y,this.s,0,6.28); bgCtx.fill(); }
+        }
+
+        // گوی‌ها
+        class Orb {
+            constructor(x, y) {
+                this.x=x; this.y=y; this.r=0; this.tr=width<600?28:35;
+                this.vx=(Math.random()-0.5)*2; this.vy=(Math.random()-0.5)*2; this.sel=false;
+            }
+            update() {
+                this.x+=this.vx; this.y+=this.vy;
+                if(this.x<this.tr || this.x>width-this.tr) this.vx*=-1;
+                if(this.y<this.tr+100 || this.y>height-this.tr-80) this.vy*=-1;
+                if(this.r<this.tr) this.r+=2;
+            }
+            draw() {
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, 6.28);
+                ctx.fillStyle = this.sel ? '#ffd700' : 'rgba(0, 242, 255, 0.2)';
+                ctx.fill(); 
+                ctx.lineWidth=2; ctx.strokeStyle= this.sel ? '#fff' : 'rgba(0, 242, 255, 0.8)'; 
+                ctx.stroke();
+                if(this.sel) { ctx.shadowBlur=20; ctx.shadowColor='#ffd700'; } else { ctx.shadowBlur=0; }
+            }
+        }
+
+        // ذرات
+        class Part {
+            constructor(x,y,c) { this.x=x; this.y=y; this.c=c; this.vx=(Math.random()-0.5)*10; this.vy=(Math.random()-0.5)*10; this.l=1; }
+            up() { this.x+=this.vx; this.y+=this.vy; this.l-=0.05; }
+            dr() { ctx.globalAlpha=this.l; ctx.fillStyle=this.c; ctx.beginPath(); ctx.arc(this.x,this.y,4,0,6.28); ctx.fill(); ctx.globalAlpha=1; }
+        }
+
+        function initGame() {
+            for(let i=0; i<80; i++) stars.push(new Star());
+            generateProblem();
+            loop();
+        }
+
+        function generateProblem() {
+            if(questionCount >= MAX_Q) { finishGame(); return; }
+            questionCount++;
+
+            // تولید سوال
+            const denoms = [2, 3, 4, 5];
+            const denom = denoms[Math.floor(Math.random()*denoms.length)];
+            const num = Math.floor(Math.random()*(denom-1))+1;
+            const whole = denom * (Math.floor(Math.random()*2)+1); // تعداد کم برای موبایل
+            const ans = (whole/denom)*num;
+            currentProblem = { ans };
+
+            // نمایش
+            const pEl = $('problemEl');
+            const fHTML = `<div class="fraction"><span>${toPersianNum(num)}</span><div class="frac-line"></div><span>${toPersianNum(denom)}</span></div>`;
+            const wHTML = `<span>${toPersianNum(whole)}</span>`;
+            
+            if(Math.random()>0.5) pEl.innerHTML = `${fHTML} <span>×</span> ${wHTML} <span>=</span> ?`;
+            else pEl.innerHTML = `${wHTML} <span>×</span> ${fHTML} <span>=</span> ?`;
+
+            $('btn-shoot').classList.remove('show');
+            
+            // تولید گوی
+            orbs = [];
+            for(let i=0; i<whole; i++) orbs.push(new Orb(width/2, height/2));
+        }
+
+        function checkAnswer() {
+            const sel = orbs.filter(o=>o.sel).length;
+            const fb = $('feedback');
+            
+            if(sel === currentProblem.ans) {
+                score += 20;
+                $('scoreEl').innerText = `امتیاز: ${toPersianNum(score)}`;
+                fb.innerText = "✅"; fb.style.color = "#00e676"; fb.style.display="block";
+                
+                // انفجار
+                orbs.forEach(o=>{ if(o.sel) for(let k=0;k<8;k++) particles.push(new Part(o.x,o.y,'#ffd700')); });
+                orbs = [];
+                
+                setTimeout(()=>{ fb.style.display="none"; generateProblem(); }, 1500);
+            } else {
+                fb.innerText = "❌"; fb.style.color = "#ff1744"; fb.style.display="block";
+                setTimeout(()=>{ fb.style.display="none"; }, 1000);
+            }
+        }
+
+        function loop() {
+            bgCtx.clearRect(0,0,width,height);
+            stars.forEach(s=>s.draw());
+            
+            ctx.clearRect(0,0,width,height);
+            
+            // خطوط
+            const sels = orbs.filter(o=>o.sel);
+            ctx.beginPath(); ctx.strokeStyle='rgba(255,235,59,0.5)'; ctx.lineWidth=2;
+            for(let i=0; i<sels.length; i++) for(let j=i+1; j<sels.length; j++) {
+                if(Math.hypot(sels[i].x-sels[j].x, sels[i].y-sels[j].y)<250) {
+                    ctx.moveTo(sels[i].x, sels[i].y); ctx.lineTo(sels[j].x, sels[j].y);
+                }
+            }
+            ctx.stroke();
+
+            orbs.forEach(o=>{ o.update(); o.draw(); });
+            particles.forEach((p,i)=>{ p.up(); p.dr(); if(p.l<=0) particles.splice(i,1); });
+            
+            requestAnimationFrame(loop);
+        }
+
+        // ورودی
+        function handle(x,y) {
+            let ch = false;
+            orbs.forEach(o=>{
+                if(Math.hypot(x-o.x, y-o.y) < o.tr+15) { o.sel=!o.sel; ch=true; for(let k=0;k<3;k++) particles.push(new Part(o.x,o.y,'#fff')); }
+            });
+            if(ch) {
+                const c = orbs.filter(o=>o.sel).length;
+                const b = $('btn-shoot');
+                if(c>0) { b.classList.add('show'); b.innerText=`شکار ${toPersianNum(c)} هدف`; }
+                else b.classList.remove('show');
+            }
+        }
+        canvas.addEventListener('mousedown', e=>handle(e.clientX, e.clientY));
+        canvas.addEventListener('touchstart', e=>{ e.preventDefault(); handle(e.changedTouches[0].clientX, e.changedTouches[0].clientY); }, {passive:false});
+        $('btn-shoot').addEventListener('click', checkAnswer);
+        $('btn-shoot').addEventListener('touchstart', (e)=>{ e.preventDefault(); checkAnswer(); });
+
+        // اجرای چک
+        checkUserStatus();
+
+    </script>
+</body>
+</html>
