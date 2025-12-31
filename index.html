@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>آزمون ریاضی چمران (نسخه نهایی)</title>
+    <title>آزمون ریاضی چمران (ارسال نمرات)</title>
     
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/lalezar-font@v32.0/dist/lalezar-font-face.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
@@ -15,11 +15,10 @@
         .screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: none; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 100; background: var(--bg); transition: opacity 0.5s; overflow-y: auto; /* برای اسکرول در موبایل کوچک */
+            z-index: 100; background: var(--bg); transition: opacity 0.5s; overflow-y: auto; 
         }
         .active { display: flex; }
 
-        /* باکس‌ها */
         .box-card {
             background: var(--card-bg); padding: 25px; border-radius: 25px;
             border: 1px solid rgba(255,255,255,0.1); width: 85%; max-width: 380px;
@@ -27,19 +26,17 @@
             margin: 20px 0;
         }
         
-        /* لیست راهنما */
-        .guide-list {
-            text-align: right; margin: 20px 0; padding: 0; list-style: none;
+        /* استایل وضعیت ارسال */
+        .sending-status {
+            font-family: 'Vazirmatn'; font-size: 0.8rem; margin-top: 10px; padding: 5px; border-radius: 10px; display: none;
         }
-        .guide-item {
-            display: flex; align-items: flex-start; gap: 10px; margin-bottom: 15px;
-            font-family: 'Vazirmatn'; font-size: 0.95rem; line-height: 1.6; color: #ddd;
-        }
+
+        .guide-list { text-align: right; margin: 20px 0; padding: 0; list-style: none; }
+        .guide-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 15px; font-family: 'Vazirmatn'; font-size: 0.95rem; line-height: 1.6; color: #ddd; }
         .guide-icon { font-size: 1.2rem; min-width: 25px; }
         .highlight { color: var(--primary); font-weight: bold; }
         .danger { color: #ff1744; font-weight: bold; }
 
-        /* ورودی و دکمه */
         input {
             width: 100%; padding: 15px; margin: 15px 0; border-radius: 50px;
             border: 2px solid #444; background: #111; color: #fff;
@@ -55,12 +52,10 @@
         }
         button:active { transform: scale(0.96); }
 
-        /* کارنامه */
         .report-row { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 12px 0; }
         .report-label { font-family: 'Vazirmatn'; color: #aaa; }
         .score-big { font-size: 4rem; color: var(--success); margin: 15px 0; text-shadow: 0 0 30px rgba(0,230,118,0.3); }
 
-        /* تایمر */
         .timer-box {
             position: absolute; top: 15px; left: 15px; z-index: 20;
             font-family: 'Vazirmatn'; font-weight: bold; font-size: 1.2rem;
@@ -70,7 +65,6 @@
         .timer-icon { animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0.5; } }
 
-        /* بازخورد */
         .feedback-overlay {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
             pointer-events: none; z-index: 50; text-align: center; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -79,7 +73,6 @@
         .fb-text { font-size: 4.5rem; text-shadow: 0 0 40px #000; display: block; margin-bottom: 10px;}
         .fb-sub { font-family: 'Vazirmatn'; font-size: 1.1rem; background: rgba(0,0,0,0.8); padding: 8px 20px; border-radius: 30px; border: 1px solid #fff; }
 
-        /* محیط بازی */
         #game-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; display: flex; flex-direction: column; align-items: center; }
         .hud-top { margin-top: 70px; background: rgba(255,255,255,0.1); padding: 5px 25px; border-radius: 20px; backdrop-filter: blur(5px); pointer-events: auto; display: flex; gap: 20px; align-items: center; border: 1px solid rgba(255,255,255,0.2); }
         .math-problem { font-size: 2.5rem; direction: ltr; display: flex; align-items: center; gap: 10px; color: #ffeb3b; }
@@ -110,38 +103,15 @@
     <div id="guide-screen" class="screen">
         <div class="box-card" style="max-width: 500px;">
             <h2 style="color:var(--primary); margin-top:0;">راهنمای آزمون</h2>
-            
             <ul class="guide-list">
-                <li class="guide-item">
-                    <span class="guide-icon">🧠</span>
-                    <span>ابتدا حاصل ضرب کسرها را ذهنی حساب کنید.</span>
-                </li>
-                <li class="guide-item">
-                    <span class="guide-icon">🔵</span>
-                    <span><span class="highlight">مقدار جواب را با انتخاب گوی‌ها مشخص کنید.</span> (مثلاً اگر جواب ۴ شد، باید ۴ تا گوی را انتخاب کنید).</span>
-                </li>
-                <li class="guide-item">
-                    <span class="guide-icon">✅</span>
-                    <span>پاسخ صحیح: <span style="color:var(--success)">۲۰ امتیاز مثبت</span></span>
-                </li>
-                <li class="guide-item">
-                    <span class="guide-icon">❌</span>
-                    <span>پاسخ غلط: <span class="danger">۲۰ امتیاز منفی (کسر می‌شود!)</span></span>
-                </li>
-                <li class="guide-item">
-                    <span class="guide-icon">🏆</span>
-                    <span>حداکثر امتیاز کل: <span class="highlight">۲۰۰</span> (۱۰ سوال)</span>
-                </li>
-                <li class="guide-item">
-                    <span class="guide-icon">⏱</span>
-                    <span>مدت زمان: <span class="highlight">۵ دقیقه</span></span>
-                </li>
-                <li class="guide-item">
-                    <span class="guide-icon">⚠️</span>
-                    <span class="danger">فقط یک بار فرصت شرکت در آزمون را دارید!</span>
-                </li>
+                <li class="guide-item"><span class="guide-icon">🧠</span><span>ابتدا حاصل ضرب کسرها را ذهنی حساب کنید.</span></li>
+                <li class="guide-item"><span class="guide-icon">🔵</span><span><span class="highlight">مقدار جواب را با انتخاب گوی‌ها مشخص کنید.</span> (مثلاً اگر جواب ۴ شد، باید ۴ تا گوی را انتخاب کنید).</span></li>
+                <li class="guide-item"><span class="guide-icon">✅</span><span>پاسخ صحیح: <span style="color:var(--success)">۲۰ امتیاز مثبت</span></span></li>
+                <li class="guide-item"><span class="guide-icon">❌</span><span>پاسخ غلط: <span class="danger">۲۰ امتیاز منفی (کسر می‌شود!)</span></span></li>
+                <li class="guide-item"><span class="guide-icon">🏆</span><span>حداکثر امتیاز کل: <span class="highlight">۲۰۰</span> (۱۰ سوال)</span></li>
+                <li class="guide-item"><span class="guide-icon">⏱</span><span>مدت زمان: <span class="highlight">۵ دقیقه</span></span></li>
+                <li class="guide-item"><span class="guide-icon">⚠️</span><span class="danger">فقط یک بار فرصت شرکت در آزمون را دارید!</span></li>
             </ul>
-
             <button onclick="startMainGame()">متوجه شدم، شروع عملیات!</button>
         </div>
     </div>
@@ -152,19 +122,13 @@
             <h2 style="margin:0; color:#fff;">کارنامه نهایی</h2>
             
             <div style="margin: 25px 0;">
-                <div class="report-row">
-                    <span class="report-label">نام دانش‌آموز:</span>
-                    <span class="report-val" id="resName">-</span>
-                </div>
-                <div class="report-row">
-                    <span class="report-label">تاریخ آزمون:</span>
-                    <span class="report-val" id="resDate">-</span>
-                </div>
-                <div class="report-row" style="border:none; margin-top:15px;">
-                    <span class="report-label">امتیاز کسب شده:</span>
-                </div>
+                <div class="report-row"><span class="report-label">نام دانش‌آموز:</span><span class="report-val" id="resName">-</span></div>
+                <div class="report-row"><span class="report-label">تاریخ آزمون:</span><span class="report-val" id="resDate">-</span></div>
+                <div class="report-row" style="border:none; margin-top:15px;"><span class="report-label">امتیاز کسب شده:</span></div>
                 <div class="score-big" id="resScore">۰</div>
             </div>
+
+            <div id="sendStatus" class="sending-status"></div>
 
             <p style="font-family:'Vazirmatn'; font-size:0.8rem; color:#aaa;">آزمون بسته شده است.</p>
             <button class="admin-btn" onclick="adminReset()">پنل معلم</button>
@@ -172,38 +136,31 @@
     </div>
 
     <div id="game-ui" style="display:none;">
-        <div class="timer-box">
-            <span class="timer-icon">⏱</span>
-            <span id="timerEl">05:00</span>
-        </div>
+        <div class="timer-box"><span class="timer-icon">⏱</span><span id="timerEl">05:00</span></div>
         <div class="badge"><span>🚀</span> <span style="font-family:'Vazirmatn'; font-size:0.8rem;">کلاس پنجم</span></div>
-        
         <div class="hud-top">
-            <span id="scoreEl">امتیاز: ۰</span>
-            <div style="width:1px; height:20px; background:#fff;"></div>
-            <div id="problemEl" class="math-problem"></div>
+            <span id="scoreEl">امتیاز: ۰</span><div style="width:1px; height:20px; background:#fff;"></div><div id="problemEl" class="math-problem"></div>
         </div>
-        
-        <div id="feedback" class="feedback-overlay">
-            <span class="fb-text" id="fbText"></span>
-            <span class="fb-sub" id="fbSub"></span>
-        </div>
-
+        <div id="feedback" class="feedback-overlay"><span class="fb-text" id="fbText"></span><span class="fb-sub" id="fbSub"></span></div>
         <button id="btn-shoot">شکارش کن!</button>
     </div>
 
     <script>
-        const DB_KEY = 'chamran_exam_final_v4';
+        // ******************************************************
+        //    تنظیمات معلم (ایمیل خود را در خط زیر وارد کنید)
+        // ******************************************************
+        const TEACHER_EMAIL = "mpakzad529@gmail.com"; 
+        // مثال: const TEACHER_EMAIL = "ali.mohammadi@gmail.com";
+        // ******************************************************
+
+        const DB_KEY = 'chamran_exam_final_v5_email';
         const toPersianNum = (n) => n.toString().replace(/\d/g, x => "۰۱۲۳۴۵۶۷۸۹"[x]);
         const $ = (id) => document.getElementById(id);
 
-        // --- بررسی وضعیت کاربر ---
         function checkUserStatus() {
             const savedData = localStorage.getItem(DB_KEY);
             if (savedData) {
                 const data = JSON.parse(savedData);
-                // اگر قبلا وارد شده (چه تمام کرده چه نکرده)، مستقیم کارنامه را نشان بده
-                // چون "یک بار فرصت" یعنی بعد از ثبت نام دیگر راه برگشتی نیست.
                 showResult(data.name, data.score, data.date);
             } else {
                 $('login-screen').classList.add('active');
@@ -214,34 +171,26 @@
             $('resName').innerText = name;
             $('resScore').innerText = toPersianNum(score);
             $('resDate').innerText = date ? toPersianNum(date) : toPersianNum(new Date().toLocaleDateString('fa-IR'));
-            
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             $('result-screen').classList.add('active');
         }
 
-        // --- مدیریت صفحات ---
         let playerName = "";
         let timerInterval;
-        let timeLeft = 300; // 5 دقیقه
+        let timeLeft = 300; 
 
-        // مرحله ۱: زدن دکمه ورود -> رفتن به راهنما
         function goToGuide() {
             const name = $('inpName').value.trim();
             if (name.length < 3) { alert("لطفاً نام کامل خود را وارد کنید."); return; }
             playerName = name;
-            
             $('login-screen').classList.remove('active');
             $('guide-screen').classList.add('active');
         }
 
-        // مرحله ۲: زدن دکمه شروع در راهنما -> شروع بازی
         function startMainGame() {
-            // ثبت قفل اولیه (امتیاز ۰)
             saveData(0, false);
-
             $('guide-screen').classList.remove('active');
             $('game-ui').style.display = 'flex';
-            
             initGame();
             startTimer();
         }
@@ -251,10 +200,7 @@
             timerInterval = setInterval(() => {
                 timeLeft--;
                 updateTimerDisplay();
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    finishGame(true);
-                }
+                if (timeLeft <= 0) { clearInterval(timerInterval); finishGame(true); }
             }, 1000);
         }
 
@@ -272,8 +218,51 @@
             const date = new Date().toLocaleDateString('fa-IR');
             saveData(score, true, date);
             
+            // ارسال ایمیل به معلم
+            sendEmailToTeacher(playerName, score, date);
+
             $('game-ui').style.display = 'none';
             showResult(playerName, score, date);
+        }
+
+        // --- تابع جدید: ارسال ایمیل ---
+        function sendEmailToTeacher(name, score, date) {
+            const statusEl = $('sendStatus');
+            
+            // چک کردن اینکه آیا ایمیل ست شده است؟
+            if (TEACHER_EMAIL === "YOUR_EMAIL_HERE" || TEACHER_EMAIL === "") {
+                console.log("ایمیل معلم تنظیم نشده است.");
+                return;
+            }
+
+            statusEl.style.display = "block";
+            statusEl.style.background = "#fff3cd";
+            statusEl.style.color = "#856404";
+            statusEl.innerText = "در حال ارسال نمره به معلم...";
+
+            fetch(`https://formsubmit.co/ajax/${TEACHER_EMAIL}`, {
+                method: "POST",
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    subject: `نمره جدید: ${name}`,
+                    message: `دانش‌آموز: ${name}\nامتیاز: ${score}\nتاریخ: ${date}\nکلاس: پنجم شهید چمران`
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                statusEl.style.background = "#d4edda";
+                statusEl.style.color = "#155724";
+                statusEl.innerText = "✅ نمره برای معلم ارسال شد.";
+            })
+            .catch(error => {
+                statusEl.style.background = "#f8d7da";
+                statusEl.style.color = "#721c24";
+                statusEl.innerText = "❌ خطا در ارسال (اما نمره ثبت شد)";
+                console.error(error);
+            });
         }
 
         function saveData(scr, finished, date="") {
@@ -285,12 +274,12 @@
             const pass = prompt("رمز پنل معلم:");
             if (pass === "7563") {
                 localStorage.removeItem(DB_KEY);
-                alert("دستگاه ریست شد. آماده برای دانش‌آموز بعدی.");
+                alert("دستگاه ریست شد.");
                 location.reload();
             }
         }
 
-        // ================= GAME ENGINE =================
+        // GAME ENGINE
         const canvas = $('gameCanvas'); const ctx = canvas.getContext('2d');
         const bgCanvas = $('bgCanvas'); const bgCtx = bgCanvas.getContext('2d');
         let width, height;
@@ -298,7 +287,7 @@
         window.addEventListener('resize', resize); resize();
 
         let orbs=[], particles=[], stars=[], score=0, currentProblem={}, qCount=0;
-        const MAX_Q = 10; // ۱۰ سوال برای ۲۰۰ امتیاز
+        const MAX_Q = 10;
 
         class Star { constructor(){this.x=Math.random()*width;this.y=Math.random()*height;this.s=Math.random()*2;} draw(){bgCtx.fillStyle=`rgba(255,255,255,${Math.random()})`;bgCtx.beginPath();bgCtx.arc(this.x,this.y,this.s,0,6.28);bgCtx.fill();} }
         class Orb { constructor(x,y){this.x=x;this.y=y;this.r=0;this.tr=width<600?28:35;this.vx=(Math.random()-0.5)*2;this.vy=(Math.random()-0.5)*2;this.sel=false;} update(){this.x+=this.vx;this.y+=this.vy;if(this.x<this.tr||this.x>width-this.tr)this.vx*=-1;if(this.y<this.tr+100||this.y>height-this.tr-80)this.vy*=-1;if(this.r<this.tr)this.r+=2;} draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,6.28);ctx.fillStyle=this.sel?'#ffd700':'rgba(0,242,255,0.2)';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=this.sel?'#fff':'rgba(0,242,255,0.8)';ctx.stroke();if(this.sel){ctx.shadowBlur=20;ctx.shadowColor='#ffd700';}else{ctx.shadowBlur=0;}} }
@@ -315,44 +304,26 @@
             orbs=[]; for(let i=0;i<w;i++) orbs.push(new Orb(width/2, height/2));
         }
 
-        // --- بازخورد و امتیازدهی ---
         function showFeedback(type) {
-            const fb = $('feedback');
-            const txt = $('fbText');
-            const sub = $('fbSub');
-            
-            fb.classList.remove('show');
-            void fb.offsetWidth; 
-            
+            const fb = $('feedback'); const txt = $('fbText'); const sub = $('fbSub');
+            fb.classList.remove('show'); void fb.offsetWidth; 
             if(type === 'success') {
-                txt.innerText = "آفرین!"; txt.style.color = "#00e676";
-                sub.innerText = "پاسخ صحیح بود (+۲۰)"; sub.style.color = "#ccff90";
+                txt.innerText = "آفرین!"; txt.style.color = "#00e676"; sub.innerText = "پاسخ صحیح بود (+۲۰)"; sub.style.color = "#ccff90";
                 if(navigator.vibrate) navigator.vibrate(100);
             } else {
-                txt.innerText = "اشتباه شد!"; txt.style.color = "#ff1744";
-                sub.innerText = "دقت کن (-۲۰ امتیاز)"; sub.style.color = "#ffcdd2";
+                txt.innerText = "اشتباه شد!"; txt.style.color = "#ff1744"; sub.innerText = "دقت کن (-۲۰ امتیاز)"; sub.style.color = "#ffcdd2";
                 if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
             }
-            
-            fb.classList.add('show');
-            setTimeout(() => fb.classList.remove('show'), 1500);
+            fb.classList.add('show'); setTimeout(() => fb.classList.remove('show'), 1500);
         }
 
         function checkAns() {
             const s = orbs.filter(o=>o.sel).length;
-            
             if(s===currentProblem.ans) { 
-                score+=20; 
-                showFeedback('success');
-                orbs.forEach(o=>{if(o.sel)for(let k=0;k<8;k++)particles.push(new Part(o.x,o.y,'#ffd700'))}); orbs=[]; 
-                setTimeout(genQ, 1500); 
+                score+=20; showFeedback('success');
+                orbs.forEach(o=>{if(o.sel)for(let k=0;k<8;k++)particles.push(new Part(o.x,o.y,'#ffd700'))}); orbs=[]; setTimeout(genQ, 1500); 
             } else { 
-                score-=20; // امتیاز منفی
-                showFeedback('error');
-                // در صورت اشتباه سوال عوض نمی‌شود تا دوباره تلاش کند (یا اگر میخواهید رد شود genQ بگذارید)
-                // طبق استاندارد آزمون بهتر است برود بعدی، پس:
-                orbs=[]; 
-                setTimeout(genQ, 1500);
+                score-=20; showFeedback('error'); orbs=[]; setTimeout(genQ, 1500);
             }
             $('scoreEl').innerText=`امتیاز: ${toPersianNum(score)}`; 
         }
